@@ -5,13 +5,14 @@ const passport = require("passport");
 const bcrypt = require("bcrypt");
 const LocalStrategy = require("passport-local").Strategy;
 const mongoose = require("mongoose");
+const User = require("./models/User");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.static("public"));
 
-const users = [];
+// const users = [];
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
@@ -76,20 +77,25 @@ function ensureAuthenticated(req, res, next) {
 app.post("/register", async (req, res) => {
   try {
     const { email, password } = req.body;
-    const existingUser = users.find((u) => u.email === email);
+
+    const existingUser = await User.findOne({ email: email });
     if (existingUser) {
       return res.status(400).send("Користувач з таким email вже існує");
     }
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = {
-      id: Date.now().toString(),
+
+    const newUser = new User({
       email: email,
       password: hashedPassword,
-    };
-    users.push(newUser);
-    console.log("Зареєстровані користувачі:", users);
+    });
+
+    await newUser.save();
+
+    console.log("Нового користувача збережено в БД:", newUser);
     res.status(201).send("Користувача успішно зареєстровано");
   } catch (error) {
+    console.error("Помилка реєстрації:", error);
     res.status(500).send("Помилка на сервері");
   }
 });
