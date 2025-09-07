@@ -1,3 +1,6 @@
+const getUsersBtn = document.getElementById("get-users-btn");
+const usersListContainer = document.getElementById("users-list-container");
+
 const registerForm = document.getElementById("register-form");
 const loginForm = document.getElementById("login-form");
 
@@ -68,4 +71,40 @@ logoutBtn.addEventListener("click", async () => {
 
   const message = await response.text();
   statusMessage.textContent = message;
+});
+
+getUsersBtn.addEventListener("click", async () => {
+  statusMessage.textContent = "Отримання списку користувачів...";
+  usersListContainer.innerHTML = "";
+
+  const response = await fetch("/api/users", {
+    method: "GET",
+  });
+
+  if (response.status === 401) {
+    statusMessage.textContent = "Будь ласка, увійдіть, щоб побачити список.";
+    return;
+  }
+
+  if (!response.ok) {
+    statusMessage.textContent = "Не вдалося отримати список користувачів.";
+    return;
+  }
+
+  const users = await response.json();
+
+  if (users.length === 0) {
+    statusMessage.textContent = "Не знайдено зареєстрованих користувачів.";
+    return;
+  }
+
+  statusMessage.textContent = "Список зареєстрованих користувачів:";
+
+  const ul = document.createElement("ul");
+  users.forEach((user) => {
+    const li = document.createElement("li");
+    li.textContent = user.email;
+    ul.appendChild(li);
+  });
+  usersListContainer.appendChild(ul);
 });

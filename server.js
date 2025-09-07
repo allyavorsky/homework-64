@@ -123,6 +123,15 @@ app.get("/protected", ensureAuthenticated, (req, res) => {
   );
 });
 
+app.get("/api/users", ensureAuthenticated, async (req, res) => {
+  try {
+    const users = await User.find({}, "email");
+    res.json(users);
+  } catch (error) {
+    res.status(500).send("Помилка на сервері");
+  }
+});
+
 app.get("/", (req, res) => {
   res.send("<h1>Сервер Express. Захищений маршрут створено.</h1>");
 });
