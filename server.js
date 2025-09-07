@@ -4,6 +4,7 @@ const session = require("express-session");
 const passport = require("passport");
 const bcrypt = require("bcrypt");
 const LocalStrategy = require("passport-local").Strategy;
+const mongoose = require("mongoose");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -115,6 +116,18 @@ app.get("/protected", ensureAuthenticated, (req, res) => {
 app.get("/", (req, res) => {
   res.send("<h1>Сервер Express. Захищений маршрут створено.</h1>");
 });
+
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("MongoDB підключено успішно!");
+  } catch (error) {
+    console.error("Помилка підключення до MongoDB:", error.message);
+    process.exit(1);
+  }
+};
+
+connectDB();
 
 app.listen(PORT, () => {
   console.log(`Сервер запущено на порту ${PORT}`);
