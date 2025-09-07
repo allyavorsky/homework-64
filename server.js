@@ -38,7 +38,7 @@ passport.use(
     { usernameField: "email" },
     async (email, password, done) => {
       try {
-        const user = users.find((u) => u.email === email);
+        const user = await User.findOne({ email: email });
         if (!user) {
           return done(null, false, { message: "Неправильний email." });
         }
@@ -60,9 +60,13 @@ passport.serializeUser((user, done) => {
   done(null, user.id);
 });
 
-passport.deserializeUser((id, done) => {
-  const user = users.find((u) => u.id === id);
-  done(null, user);
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id);
+    done(null, user);
+  } catch (error) {
+    done(error, null);
+  }
 });
 
 function ensureAuthenticated(req, res, next) {
